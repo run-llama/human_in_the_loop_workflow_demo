@@ -1,5 +1,6 @@
 "use client";
 import { useState, useEffect } from 'react';
+import styles from './page.module.css';  // Add this import
 
 declare global {
   interface Window {
@@ -68,31 +69,32 @@ export default function Home() {
   };
 
   return (
-    <div>
-      <form onSubmit={handleSubmit}>
+    <div className={styles.container}>
+      <form onSubmit={handleSubmit} className={styles.form}>
         <input
           type="text"
           value={query}
           onChange={(e) => setQuery(e.target.value)}
           placeholder="Enter your query"
+          className={styles.input}
         />
-        <button type="submit">Query</button>
-        <div id="progress">
-          <p>Progress: </p>
-          {progress.map((message, index) => (
-            <div key={index}>
-              <p>{message}</p>
-              {responseRequired && index === progress.length - 1 && (
-                <div>
-                  <p>Is this research good enough?</p>
-                  <button onClick={() => handleResponse('yes')}>Yes</button>
-                  <button onClick={() => handleResponse('no')}>No</button>
-                </div>
-              )}
-            </div>
-          ))}
-        </div>
+        <button type="submit" className={styles.button}>Query</button>
       </form>
+      <div id="progress" className={styles.progress}>
+        <h2>Progress:</h2>
+        {progress.map((message, index) => (
+          <div key={index} className={styles.message}>
+            <p>{message}</p>
+            {responseRequired && index === progress.length - 1 && (
+              <div className={styles.responseButtons}>
+                <p>Is this research good enough?</p>
+                <button onClick={() => handleResponse('yes')} className={styles.button}>Yes</button>
+                <button onClick={() => handleResponse('no')} className={styles.button}>No</button>
+              </div>
+            )}
+          </div>
+        ))}
+      </div>
     </div>
   );
 }

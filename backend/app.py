@@ -55,7 +55,7 @@ from fastapi import WebSocket
 @app.websocket("/query")
 async def query_endpoint(websocket: WebSocket):
     await websocket.accept()
-    workflow = HITLWorkflow(timeout=3000, verbose=False)
+    workflow = HITLWorkflow(timeout=None, verbose=False)
 
     try:
         query_data = await websocket.receive_json()
