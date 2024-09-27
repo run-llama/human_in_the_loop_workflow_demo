@@ -1,5 +1,7 @@
 # Human in the Loop Workflow demo
 
+[Want to walk through this code? Check out this video.](https://www.youtube.com/watch?v=hf3_fuVdrpA)
+
 ![Human in the Loop Workflow](flow.gif)
 
 This is a full-stack demonstration of how to build a LlamaIndex workflow that uses a human in the loop.
