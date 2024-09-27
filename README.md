@@ -1,5 +1,7 @@
 # Human in the Loop Workflow demo
 
+![Human in the Loop Workflow](flow.gif)
+
 This is a full-stack demonstration of how to build a LlamaIndex workflow that uses a human in the loop.
 
 The workflow is a dummy flow that simulates a report-writing agent: you give it a topic, it does research for you, and then presents that research. If you think the research is sufficient, you can approve it and the LLM will write a report based on the research. If you think the research is insufficient, you can reject it and the LLM will do more research.
