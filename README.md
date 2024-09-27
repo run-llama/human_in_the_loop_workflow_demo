@@ -4,6 +4,8 @@ This is a full-stack demonstration of how to build a LlamaIndex workflow that us
 
 The workflow is a dummy flow that simulates a report-writing agent: you give it a topic, it does research for you, and then presents that research. If you think the research is sufficient, you can approve it and the LLM will write a report based on the research. If you think the research is insufficient, you can reject it and the LLM will do more research.
 
+![Workflow](flow.png)
+
 # Frontend
 
 This is a starter Next.js app. Its primary function is to open a websocket connection to the backend, and print out the events that come back. It handles 3 types of events:
@@ -20,7 +22,7 @@ All the logic is handled by the backend, and the frontend is just a display.
 
 This is a FastAPI app. It has a websocket endpoint that the frontend connects to. It uses the `HITLWorkflow` class to run the workflow.
 
-# FastAPI
+## FastAPI
 
 This does a few simple things:
 
@@ -35,4 +37,5 @@ This does a few simple things:
 
 ## Workflow
 
-Both the frontend and the fastAPI are primarily message-passing, and the real work happens (or would happen, if it weren't a dummy) in the workflow itself.
+Both the frontend and the fastAPI are primarily message-passing, and the real work happens (or would happen, if it weren't a dummy) in the workflow itself, which follows the pattern in the diagram at the top of this page.
+
