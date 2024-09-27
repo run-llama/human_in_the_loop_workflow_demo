@@ -207,6 +207,7 @@ a.secondary {
 
 .message {
   margin-bottom: 10px;
+  margin-top: 10px;
   padding: 10px;
   background-color: white;
   border-radius: 4px;
@@ -218,6 +219,7 @@ a.secondary {
 }
 
 .responseButtons button {
+  margin-top: 10px;
   margin-right: 10px;
   border-radius: 4px;
 }

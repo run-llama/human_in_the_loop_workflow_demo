@@ -87,7 +87,7 @@ export default function Home() {
             <p>{message}</p>
             {responseRequired && index === progress.length - 1 && (
               <div className={styles.responseButtons}>
-                <p>Is this research good enough?</p>
+                <p>Does this look like enough to write a report?</p>
                 <button onClick={() => handleResponse('yes')} className={styles.button}>Yes</button>
                 <button onClick={() => handleResponse('no')} className={styles.button}>No</button>
               </div>

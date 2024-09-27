@@ -1,80 +1,56 @@
-from fastapi import FastAPI
+# bring in our imports
+from fastapi import FastAPI, WebSocket
 from pydantic import BaseModel
-from llama_index.core.workflow import (
-    Workflow,
-    step,
-    Event,
-    Context
-)
+from hitlworkflow import HITLWorkflow, ProgressEvent
 from llama_index.core.workflow.events import (
-    StartEvent,
-    StopEvent,
     InputRequiredEvent,
     HumanResponseEvent
 )
 from llama_index.core.workflow.handler import WorkflowHandler
 
-class RetryEvent(Event):
-    pass
-
-class ReportEvent(Event):
-    pass
-
-class ProgressEvent(Event):
-    pass
-
-class HITLWorkflow(Workflow):
-    @step
-    async def first_step(self, ctx: Context, ev: StartEvent | RetryEvent) -> InputRequiredEvent:
-        ctx.write_event_to_stream(ProgressEvent(msg=f"I am doing some research on the subject of {ev.query}"))
-        await ctx.set("original_query", ev.query)
-        return InputRequiredEvent(prefix="Why do I need a prefix", payload=f"Here is the research I have done so far on '{ev.query}': Lorem ipsum.")
-    
-    @step
-    async def second_step(self, ctx: Context, ev: HumanResponseEvent) -> ReportEvent | RetryEvent:
-        ctx.write_event_to_stream(ProgressEvent(msg=f"The human has responded: {ev.response}"))
-        if (ev.response == "yes"):
-            return ReportEvent(result=f"Here is the research on {await ctx.get('original_query')}")
-        else:
-            ctx.write_event_to_stream(ProgressEvent(msg=f"The human has rejected the research, retrying"))
-            return RetryEvent(query=await ctx.get("original_query"))
-        
-    @step
-    async def third_step(self, ctx: Context, ev: ReportEvent) -> StopEvent:
-        ctx.write_event_to_stream(ProgressEvent(msg=f"The human has approved the research, generating final report"))
-        # generate a report here
-        return StopEvent(result=f"This is a report on {await ctx.get('original_query')}")
-
+# create our FastAPI app
 app = FastAPI()
 
-class Query(BaseModel):
-    question: str
-
-from fastapi import WebSocket
-
+# create a websocket endpoint for our app
 @app.websocket("/query")
 async def query_endpoint(websocket: WebSocket):
     await websocket.accept()
+
+    # instantiate our workflow with no timeout
     workflow = HITLWorkflow(timeout=None, verbose=False)
 
     try:
+        # the first thing we should receive is a query
         query_data = await websocket.receive_json()
+        # we pass it to the workflow
         handler: WorkflowHandler = workflow.run(query=query_data["question"])
 
+        # now we handle events coming back from the workflow
         async for event in handler.stream_events():
+            # if we get an InputRequiredEvent, that means the workflow needs human input
+            # so we send an event to the frontend that will be handled specially
             if isinstance(event, InputRequiredEvent):
                 await websocket.send_json({
                     "type": "input_required",
                     "payload": event.payload
                 })
+                # we expect the next thing from the socket to be human input
                 response = await websocket.receive_json()
-                print("Got response ",response)
+                # which we send back to the workflow as a HumanResponseEvent
                 handler.ctx.send_event(HumanResponseEvent(response=response["response"]))
-            elif isinstance(event, (ProgressEvent)):
-                await websocket.send_json({"type": "progress", "payload": str(event.msg)})
+            elif isinstance(event, ProgressEvent):
+                # the workflow also emits progress events which we send to the frontend
+                await websocket.send_json({
+                    "type": "progress", 
+                    "payload": str(event.msg)
+                })
 
+        # this only happens when the workflow is complete
         final_result = await handler
-        await websocket.send_json({"type": "final_result", "payload": str(final_result)})
+        await websocket.send_json({
+            "type": "final_result", 
+            "payload": str(final_result)
+        })
 
     except Exception as e:
         await websocket.send_json({"type": "error", "payload": str(e)})
